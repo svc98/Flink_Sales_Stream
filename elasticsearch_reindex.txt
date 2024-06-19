@@ -1,0 +1,28 @@
+PUT /transactions_reformat
+{
+  "mappings": {
+    "properties": {
+      "transactionDate": {
+        "type": "date",
+        "format": "yyyy-MM-dd'T'HH:mm:ss"
+      }
+    }
+  }
+}
+
+POST _reindex
+{
+  "source": {
+    "index": "transactions"
+  },
+  "dest": {
+    "index": "transactions_reformat"
+  },
+  "script": {
+    "source": """
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    formatter.setTimeZone(TimeZone.getTimeZone('UTC'));
+    ctx._source.transactionDate = formatter.format(new Date(ctx._source.transactionDate));
+    """
+  }
+}
